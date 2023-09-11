@@ -18,7 +18,12 @@ log4js.configure({
       }
     }
   },
-  categories: { default: { appenders: ['file', 'out'], level: 'error' } }
+  categories: {
+    default: {
+      appenders: ['file', 'out'],
+      level: 'error'
+    }
+  }
 })
 const logger = log4js.getLogger('logger')
 logger.level = 'info'
