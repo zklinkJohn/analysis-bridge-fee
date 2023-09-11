@@ -1,13 +1,12 @@
 import { pool } from '../../db'
 import { QueryResult } from 'pg'
 
-export interface SendMessageBaseInfo {
+export interface ClaimedMessageBaseInfo {
   messageHash: string
   layerType: 1 | 2
   blockNumber: number
   txHash: string
   eventName: string
-  fee: string
 }
 
 export interface FeeInfo {
@@ -16,39 +15,34 @@ export interface FeeInfo {
   timestamp?: number
 }
 
-export interface SendMessage extends SendMessageBaseInfo, FeeInfo {}
+export interface ClaimedMessage extends ClaimedMessageBaseInfo, FeeInfo {}
 
 // insert event log info
-export function insertSendMessageTx(
-  sendMessageInfo: SendMessageBaseInfo
-): Promise<QueryResult<any>> {
-  const { messageHash, layerType, blockNumber, txHash, eventName, fee } =
-    sendMessageInfo
-
+export function insertClaimedMessageTx(message: ClaimedMessageBaseInfo) {
+  const { messageHash, layerType, blockNumber, txHash, eventName } = message
   return pool.query(
     `
-        INSERT INTO linea_l1_l2_send_message 
+        INSERT INTO linea_l1_l2_claim_message 
             (
-              message_hash,
-              layer_type,
-              block_number,
-              tx_hash,
-              event_name, 
-              fee,
-              timestamp
+            message_hash,
+            layer_type,
+            block_number,
+            tx_hash,
+            event_name, 
+            timestamp
             ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            VALUES ($1, $2, $3, $4, $5, $6)
     `,
-    [messageHash, layerType, blockNumber, txHash, eventName, fee, 0]
+    [messageHash, layerType, blockNumber, txHash, eventName, 0]
   )
 }
 
-export async function queryEmptyGasUsedTx(): Promise<SendMessage[]> {
+export async function queryEmptyGasUsedTx(): Promise<ClaimedMessage[]> {
   const result = await pool.query(`
-    SELECT * FROM linea_l1_l2_send_message 
+    SELECT * FROM linea_l1_l2_claim_message 
     WHERE gas_used IS NULL 
   `)
-  return result.rows.map((v) => buildSendMessage(v))
+  return result.rows.map((v) => buildClaimedMessage(v))
 }
 
 export async function updateTxGasUsed(
@@ -58,32 +52,30 @@ export async function updateTxGasUsed(
 ) {
   return pool.query(
     `
-    UPDATE linea_l1_l2_send_message 
-    SET gas_used = $1 ,gas_price = $2
+    UPDATE linea_l1_l2_claim_message 
+    SET gas_used = $1 , gas_price = $2
     WHERE tx_hash=$3
   `,
     [gasUsed, gasPrice, txHash]
   )
 }
 
-function buildSendMessage(row: {
+function buildClaimedMessage(row: {
   message_hash: string
   layer_type: 1 | 2
   block_number: number
   tx_hash: string
   event_name: string
-  fee: string
   gas_used: string | null
   gas_price: string | null
   timestamp: number
-}): SendMessage {
+}): ClaimedMessage {
   return {
     messageHash: row.message_hash,
     layerType: row.layer_type,
     blockNumber: row.block_number,
     txHash: row.tx_hash,
     eventName: row.event_name,
-    fee: row.fee,
     gasUsed: row.gas_used || '',
     gasPrice: row.gas_price || '',
     timestamp: row.timestamp

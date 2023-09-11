@@ -5,13 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "db:linea": "ts-node src/linea/db/table.ts",
     "sync:linea": "ts-node src/linea/index.ts",
+    "analysis:linea": " ts-node src/linea/analysis.ts",
     "format": "prettier --config .prettierrc 'src/**/*.ts' --write"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bignumber.js": "^9.1.2",
     "dotenv": "^16.3.1",
     "ethers": "^6.7.1",
     "log4js": "^6.9.1",

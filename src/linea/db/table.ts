@@ -6,13 +6,14 @@ import logger from '../../logger'
  */
 const createSendMessageTable = `
     CREATE TABLE IF NOT EXISTS linea_l1_l2_send_message (
-        message_hash VARCHAR NOT NULL UNIQUE PRIMARY KEY,
+        message_hash VARCHAR NOT NULL PRIMARY KEY,
         layer_type INTEGER NOT NULL, 
         block_number INTEGER NOT NULL,
         tx_hash VARCHAR(66) NOT NULL,
         event_name VARCHAR,
         fee VARCHAR,
         gas_used VARCHAR,
+        gas_price VARCHAR,
         timestamp INTEGER
     )
 `
@@ -27,8 +28,8 @@ const createClaimMessageTable = `
         block_number INTEGER NOT NULL,
         tx_hash VARCHAR(66) NOT NULL,
         event_name VARCHAR,
-        fee VARCHAR,
         gas_used VARCHAR,
+        gas_price VARCHAR,
         timestamp INTEGER
     )
 `
