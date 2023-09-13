@@ -3,12 +3,6 @@ import { L1RPC, ContractAddress, L2RPC } from './constant'
 import { sleep } from '../utils/helper'
 import L1_ABI from './abis/l1.abi.json'
 import L2_ABI from './abis/l2.abi.json'
-import {
-  LINEA_L1_FROM_BLOCK,
-  LINEA_L1_TO_BLOCK,
-  LINEA_L2_FROM_BLOCK,
-  LINEA_L2_TO_BLOCK
-} from '../conf'
 
 import {
   ClaimedMessageBaseInfo,
@@ -17,30 +11,15 @@ import {
   updateTxGasUsed
 } from './db/claimMessage'
 import { ChainLayer } from './types'
+import { config } from './config'
 import logger from '../logger'
 
-const config: {
-  [chainLayer: number]: {
-    layerType: 1 | 2
-    fromBlock: number
-    toBlock: number
-  }
-} = {
-  [ChainLayer.Layer1]: {
-    layerType: 1,
-    fromBlock: Number(LINEA_L1_FROM_BLOCK),
-    toBlock: Number(LINEA_L1_TO_BLOCK)
-  },
-  [ChainLayer.Layer2]: {
-    layerType: 2,
-    fromBlock: Number(LINEA_L2_FROM_BLOCK),
-    toBlock: Number(LINEA_L2_TO_BLOCK)
-  }
-}
-
-let provider: JsonRpcProvider
-let contract: Contract
-export async function syncClaimMessageEvents(chainLayer: ChainLayer) {
+function initProviderAndContract(chainLayer: ChainLayer): {
+  provider: JsonRpcProvider
+  contract: Contract
+} {
+  let provider: JsonRpcProvider
+  let contract: Contract
   if (chainLayer === ChainLayer.Layer1) {
     provider = new ethers.JsonRpcProvider(L1RPC)
     contract = new Contract(ContractAddress.L1MessageService, L1_ABI, provider)
@@ -48,6 +27,12 @@ export async function syncClaimMessageEvents(chainLayer: ChainLayer) {
     provider = new ethers.JsonRpcProvider(L2RPC)
     contract = new Contract(ContractAddress.L2MessageService, L2_ABI, provider)
   }
+
+  return { provider, contract }
+}
+
+export async function syncClaimMessageEvents(chainLayer: ChainLayer) {
+  const { contract } = initProviderAndContract(chainLayer)
   const filter = contract.filters.MessageClaimed
   const sendMessageEvents = await contract.queryFilter(
     filter,
@@ -66,11 +51,12 @@ export async function syncClaimMessageEvents(chainLayer: ChainLayer) {
     await insertClaimedMessageTx(baseInfo)
   }
   logger.info(`insert events successful`)
-  await updateGasUsedOfTxs()
+  await updateGasUsedOfTxs(chainLayer)
 }
 
 let lastTxIndex = 0
-async function updateGasUsedOfTxs() {
+async function updateGasUsedOfTxs(chainLayer: ChainLayer) {
+  const { provider } = initProviderAndContract(chainLayer)
   console.log(`updateGasUsedOfTxs: lastTxIndex : ${lastTxIndex}`)
   const transactions = await queryEmptyGasUsedTx()
   for (let index = lastTxIndex; index < transactions.length; index++) {
@@ -90,10 +76,12 @@ async function updateGasUsedOfTxs() {
       lastTxIndex = index
     } catch (error) {
       logger.error(`getTransactionReceipt failed: `, lastTxIndex, error)
-      updateGasUsedOfTxs()
+      updateGasUsedOfTxs(chainLayer)
     } finally {
       await sleep(100)
     }
   }
   logger.info(`update gas used successful`)
 }
+
+updateGasUsedOfTxs(ChainLayer.Layer2)
