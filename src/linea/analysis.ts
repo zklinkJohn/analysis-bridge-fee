@@ -1,4 +1,12 @@
-import { queryL1ToL2AutoBridge, queryL2ToL1AutoBridge, queryL1ToL2ManulyBridge, queryL2ToL1ManulyBridge, GasUsed } from './db/analysis'
+import {
+  queryL1ToL2AutoBridge,
+  queryL2ToL1AutoBridge,
+  queryL1ToL2ManulyBridge,
+  queryL2ToL1ManulyBridge,
+  queryL1ToL2ERC20Bridge,
+  queryL2ToL1ERC20Bridge,
+  GasUsed
+} from './db/analysis'
 import BN from 'bignumber.js'
 import logger from '../logger'
 
@@ -15,7 +23,6 @@ function analysisETHAutoBridge(bridgeFees: GasUsed[]): BN {
   }
   const averageFee = totalFee.div(bridgeFees.length).div(1e18)
   return averageFee
-
 }
 
 function analysisETHManulyBridge(bridgeFees: GasUsed[]): BN {
@@ -40,20 +47,52 @@ function analysisETHManulyBridge(bridgeFees: GasUsed[]): BN {
 async function startAnalysis() {
   const l1ToL2AutoBridgeFees = await queryL1ToL2AutoBridge()
   const l1l2AutoBridgeAverageFee = analysisETHAutoBridge(l1ToL2AutoBridgeFees)
-  logger.info(`L1 to L2 auto bridge average fee: ${l1l2AutoBridgeAverageFee.toString(10)}`)
+  logger.info(
+    `L1 to L2 auto bridge average fee: ${l1l2AutoBridgeAverageFee.toString(10)}`
+  )
 
   const l2Tol1AutoBridgeFees = await queryL2ToL1AutoBridge()
   const l2l1AutoBridgeAverageFee = analysisETHAutoBridge(l2Tol1AutoBridgeFees)
-  console.log({ l2l1AutoBridgeAverageFee })
-  logger.info(`L2 to L1 auto bridge average fee: ${l2l1AutoBridgeAverageFee.toString(10)}`)
+  logger.info(
+    `L2 to L1 auto bridge average fee: ${l2l1AutoBridgeAverageFee.toString(10)}`
+  )
 
   const l1ToL2ManulyBridgeFees = await queryL1ToL2ManulyBridge()
-  const l1l2ManulyBridgeAverageFee = analysisETHManulyBridge(l1ToL2ManulyBridgeFees)
-  logger.info(`L1 to L2 manuly bridge average fee: ${l1l2ManulyBridgeAverageFee.toString(10)}`)
+  const l1l2ManulyBridgeAverageFee = analysisETHManulyBridge(
+    l1ToL2ManulyBridgeFees
+  )
+  logger.info(
+    `L1 to L2 manuly bridge average fee: ${l1l2ManulyBridgeAverageFee.toString(
+      10
+    )}`
+  )
 
   const l2Tol1ManulyBridgeFees = await queryL2ToL1ManulyBridge()
-  const l2l1ManulyBridgeAverageFee = analysisETHManulyBridge(l2Tol1ManulyBridgeFees)
-  logger.info(`L2 to L1 manuly bridge average fee: ${l2l1ManulyBridgeAverageFee.toString(10)}`)
+  const l2l1ManulyBridgeAverageFee = analysisETHManulyBridge(
+    l2Tol1ManulyBridgeFees
+  )
+  logger.info(
+    `L2 to L1 manuly bridge average fee: ${l2l1ManulyBridgeAverageFee.toString(
+      10
+    )}`
+  )
+
+  const l1Tol2ERC20BridgeFees = await queryL1ToL2ERC20Bridge()
+  // console.log({ l1Tol2ERC20BridgeFees })
+  const l1l2ERC20BridgeAverageFee = analysisETHManulyBridge(
+    l1Tol2ERC20BridgeFees
+  )
+  logger.info(
+    `L1 -> L2 ERC20 average fee: ${l1l2ERC20BridgeAverageFee.toString(10)}`
+  )
+
+  const l2Tol1ERC20BridgeFees = await queryL2ToL1ERC20Bridge()
+  const l2l1ERC20BridgeAverageFee = analysisETHManulyBridge(
+    l2Tol1ERC20BridgeFees
+  )
+  logger.info(
+    `L2 -> L1 ERC20 average fee: ${l2l1ERC20BridgeAverageFee.toString(10)}`
+  )
 }
 
 startAnalysis()

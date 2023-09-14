@@ -46,7 +46,9 @@ export async function syncSendMessageEvents(chainLayer: ChainLayer) {
       layerType: config[chainLayer].layerType,
       blockNumber: eventLog.blockNumber,
       txHash: eventLog.transactionHash,
-      eventName: eventLog.eventName
+      eventName: eventLog.eventName,
+      from: '',
+      to: ''
     }
     await insertSendMessageTx(baseInfo)
   }
@@ -84,4 +86,4 @@ async function updateGasUsedOfTxs(chainLayer: ChainLayer) {
   logger.info(`update gas used successful`)
 }
 
-// updateGasUsedOfTxs(ChainLayer.Layer2)
+updateGasUsedOfTxs(ChainLayer.Layer1)

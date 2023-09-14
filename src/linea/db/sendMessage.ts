@@ -8,6 +8,8 @@ export interface SendMessageBaseInfo {
   txHash: string
   eventName: string
   fee: string
+  from: string
+  to: string
 }
 
 export interface FeeInfo {
@@ -51,6 +53,29 @@ export async function queryEmptyGasUsedTx(): Promise<SendMessage[]> {
   return result.rows.map((v) => buildSendMessage(v))
 }
 
+export async function queryZeroFeeTxs(layerType: 1 | 2) {
+  const result = await pool.query(`
+    SELECT * FROM linea_l1_l2_send_message 
+    WHERE fee = '0' AND layer_type = ${layerType}
+  `)
+  return result.rows.map((v) => buildSendMessage(v))
+}
+
+export async function updateTxFromAndTo(
+  txHash: string,
+  from: string,
+  to: string
+) {
+  return pool.query(
+    `
+    UPDATE linea_l1_l2_send_message 
+    SET tx_from = $1 ,tx_to = $2
+    WHERE tx_hash=$3
+  `,
+    [from, to, txHash]
+  )
+}
+
 export async function updateTxGasUsed(
   txHash: string,
   gasUsed: string,
@@ -76,6 +101,8 @@ function buildSendMessage(row: {
   gas_used: string | null
   gas_price: string | null
   timestamp: number
+  tx_from: string
+  tx_to: string
 }): SendMessage {
   return {
     messageHash: row.message_hash,
@@ -86,6 +113,8 @@ function buildSendMessage(row: {
     fee: row.fee,
     gasUsed: row.gas_used || '',
     gasPrice: row.gas_price || '',
-    timestamp: row.timestamp
+    timestamp: row.timestamp,
+    from: row.tx_from,
+    to: row.tx_to
   }
 }

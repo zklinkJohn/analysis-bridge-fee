@@ -14,7 +14,9 @@ const createSendMessageTable = `
         fee VARCHAR,
         gas_used VARCHAR,
         gas_price VARCHAR,
-        timestamp INTEGER
+        timestamp INTEGER,
+        tx_from VARCHAR,
+        tx_to VARCHAR
     )
 `
 

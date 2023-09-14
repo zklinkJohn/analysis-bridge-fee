@@ -84,4 +84,4 @@ async function updateGasUsedOfTxs(chainLayer: ChainLayer) {
   logger.info(`update gas used successful`)
 }
 
-updateGasUsedOfTxs(ChainLayer.Layer2)
+updateGasUsedOfTxs(ChainLayer.Layer1)
