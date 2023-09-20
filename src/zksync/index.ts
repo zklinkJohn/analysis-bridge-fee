@@ -1,5 +1,5 @@
 // import { Provider, Contract } from 'zksync-web3'
-import L2ERC20_BRIDGE_ABI from './abi/L2ERC20Bridge.abi.json'
+import L2ERC20_BRIDGE_ABI from './abi/l2.abi.json'
 import { ethers, Contract, EventFilter } from 'ethers'
 
 // getTransaction()

@@ -8,6 +8,7 @@
     "db:linea": "ts-node src/linea/db/table.ts",
     "sync:linea": "ts-node src/linea/index.ts",
     "analysis:linea": " ts-node src/linea/analysis.ts",
+    "db:zksync": "ts-node src/zksync/db/table.ts",
     "format": "prettier --config .prettierrc 'src/**/*.ts' --write"
   },
   "keywords": [],
